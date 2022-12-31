@@ -1,10 +1,12 @@
 package com.example.babybuy1;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 import androidx.annotation.NavigationRes;
 import androidx.annotation.Nullable;
@@ -74,7 +76,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getElementById(int id) {
         SQLiteDatabase database = getWritableDatabase();
-        String sqlQuery = "SELECT * FROM " + TABLE_NAME + " WHERE id=?";
+
+        String sqlQuery = "SELECT * FROM " + TABLE_NAME + " WHERE "+ COLUMN_ID +"=?";
         return database.rawQuery(
                 sqlQuery,
                 new String[]{String.valueOf(id)}
@@ -96,17 +99,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             boolean purchased
     ) {
         SQLiteDatabase database = getWritableDatabase();
-        String sql = "UPDATE " + TABLE_NAME + " SET " + NAME + "=?, " +
-                PRICE + "=?, " + DESCRIPTION + "=?, " + IMAGE + "=?, " + PURCHASED + "=? WHERE id = ?";
-        SQLiteStatement statement = database.compileStatement(sql);
-        statement.clearBindings();
-        statement.bindString(1, name);
-        statement.bindDouble(2, price);
-        statement.bindString(3, description);
-        statement.bindString(4, image);
-        statement.bindLong(4, purchased ? 1 : 0);
-        statement.bindLong(5, id);
-        int result = statement.executeUpdateDelete();
+        ContentValues cv = new ContentValues();
+        cv.put(NAME, name);
+        cv.put(PRICE, price);
+        cv.put(DESCRIPTION, description);
+        cv.put(IMAGE, image);
+        cv.put(PURCHASED, purchased);
+        int result = database.update(TABLE_NAME, cv, COLUMN_ID+ "=?", new String[]{String.valueOf(id)});
+        Log.d("Database helper:", "result: "+ result);
         database.close();
         return result != -1;
     }

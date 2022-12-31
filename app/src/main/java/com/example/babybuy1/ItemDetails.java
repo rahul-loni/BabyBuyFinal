@@ -1,18 +1,20 @@
 package com.example.babybuy1;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 public class ItemDetails extends AppCompatActivity {
     public static final String ID = "id";
@@ -20,38 +22,63 @@ public class ItemDetails extends AppCompatActivity {
     public static final String PRICE = "price";
     public static final String DESCRIPTION = "description";
     public static final String IMAGE = "image";
+    public static final String IS_PURCHASED = "purchased";
+    public static final int EDIT_ITEM_REQUEST = 10001;
 
-    public static Intent getIntent(Context context, Item item) {
+    public static Intent getIntent(Context context, int id) {
         Intent intent = new Intent(context, ItemDetails.class);
-        intent.putExtra(ID, item.getId());
-        intent.putExtra(NAME, item.getName());
-        intent.putExtra(PRICE, item.getPrice().toString());
-        intent.putExtra(DESCRIPTION, item.getDescription());
-        intent.putExtra(IMAGE, item.getImage().toString());
+        intent.putExtra(ID, id);
 
         return intent;
     }
+
+    private Item item;
+    private DatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
+        item = new Item();
+        databaseHelper = new DatabaseHelper(this);
         ImageView imageView = findViewById(R.id.imageViewItem);
         TextView textViewName = findViewById(R.id.textViewName);
         TextView textViewPrice = findViewById(R.id.textViewPrice);
         TextView textViewDescription = findViewById(R.id.textViewDescription);
         Button buttonEdit = findViewById(R.id.buttonEditItem);
+        Button buttonShare = findViewById(R.id.buttonShareItem);
 
         Bundle bundle = getIntent().getExtras();
-        long id = bundle.getLong(ItemDetails.ID);
-        String name = bundle.getString(ItemDetails.NAME);
-        String price = bundle.getString(ItemDetails.PRICE);
-        String description = bundle.getString(ItemDetails.DESCRIPTION);
+        int id = bundle.getInt(ItemDetails.ID);
+        Log.d("ItemDetails: id:", id+"");
 
-        Uri imageUri = Uri.EMPTY;
+        item = retrieveData(id);
+        imageView.setImageURI(item.getImage());
+        textViewName.setText(item.getName());
+        textViewPrice.setText(item.getPrice().toString());
+        textViewDescription.setText(item.getDescription());
+        buttonEdit.setOnClickListener(v -> startEditItemActivity(v, item));
+        buttonShare.setOnClickListener(this::startShareItemActivity);
+    }
+
+    private void startEditItemActivity(View v, Item item) {
+        startActivity(EditItem.getIntent(getApplicationContext(), item));
+    }
+
+    private Item retrieveData(int id) {
+        Cursor cursor = databaseHelper.getElementById(id);
+        cursor.moveToNext();
+
+        Item item = new Item();
+        item.setId(cursor.getInt(0));
+        item.setName(cursor.getString(1));
+        item.setPrice(cursor.getDouble(2));
+        item.setDescription(cursor.getString(3));
+        item.setImage(Uri.EMPTY);
         try {
-            imageUri = Uri.parse(bundle.getString(ItemDetails.IMAGE));
+            Uri imageUri = Uri.parse(cursor.getString(4));
+            item.setImage(imageUri);
         } catch (NullPointerException e) {
             Toast.makeText(
                     this,
@@ -59,16 +86,19 @@ public class ItemDetails extends AppCompatActivity {
                     Toast.LENGTH_SHORT
             ).show();
         }
-        if (!imageUri.equals(Uri.EMPTY)){
-            imageView.setImageURI(imageUri);
-        }
-        textViewName.setText(name);
-        textViewPrice.setText(price);
-        textViewDescription.setText(description);
-        buttonEdit.setOnClickListener(this::startEditItemActivity);
+        item.setPurchased(cursor.getInt(5) == 1);
+
+        Log.d("ItemDetails:", item.toString());
+        return item;
     }
 
-    private void startEditItemActivity(View view) {
-//        startActivity();
+    private void startShareItemActivity(View view) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "");
+        intent.putExtra(Intent.EXTRA_TEXT, "Check ypur cool Application ");
+        startActivity(Intent.createChooser(intent, "Share via"));
     }
+
+
 }

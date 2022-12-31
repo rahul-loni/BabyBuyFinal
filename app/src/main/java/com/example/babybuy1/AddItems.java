@@ -17,7 +17,6 @@ import com.github.dhaval2404.imagepicker.ImagePicker;
 
 public class AddItems extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
-    private Button buttonAddItem;
     private EditText editTextName, editTextPrice, editTextDescription;
     private ImageView imageView;
     private Uri imageUri;
@@ -31,10 +30,15 @@ public class AddItems extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_items);
 
-        findId();
-        databaseHelper = new DatabaseHelper(this);
-
         imageUri = Uri.EMPTY;
+
+        databaseHelper = new DatabaseHelper(this);
+        Button buttonAddItem = findViewById(R.id.buttonSaveItem);
+        editTextName = findViewById(R.id.editTextName);
+        editTextPrice = findViewById(R.id.editTextPrice);
+        editTextDescription = findViewById(R.id.editTextDescription);
+        imageView = findViewById(R.id.circleImageViewItem);
+
         imageView.setOnClickListener(this::pickImage);
         buttonAddItem.setOnClickListener(this::saveItem);
     }
@@ -80,31 +84,16 @@ public class AddItems extends AppCompatActivity {
         }
     }
 
-
-    private void findId() {
-        buttonAddItem = findViewById(R.id.buttonSaveItem);
-        editTextName = findViewById(R.id.editTextName);
-        editTextPrice = findViewById(R.id.editTextPrice);
-        editTextDescription = findViewById(R.id.editTextDescription);
-        imageView = findViewById(R.id.circleImageViewItem);
-    }
-
     private void pickImage(View view) {
-        ImagePicker.with(AddItems.this)
-                .crop()                    //Crop image(Optional), Check Customization for more option
-                .compress(1024)            //Final image size will be less than 1 MB(Optional)
-                .maxResultSize(1080, 1080)    //Final image resolution will be less than 1080 x 1080(Optional)
-                .start();
+        ImagePickerUtility.pickImage(view, AddItems.this);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-
         if (data != null) {
             imageUri = data.getData();
             imageView.setImageURI(imageUri);
         }
-
         super.onActivityResult(requestCode, resultCode, data);
     }
 }

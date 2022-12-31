@@ -11,6 +11,8 @@ public class Item {
     private double price;
     private boolean purchased;
 
+
+
     public Item() {}
 
 //    public Item(String name, double price, String description, String location, @Nullable Uri image) {
@@ -67,5 +69,17 @@ public class Item {
 
     public void setPurchased(boolean purchased) {
         this.purchased = purchased;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", image=" + image +
+                ", price=" + price +
+                ", purchased=" + purchased +
+                '}';
     }
 }

@@ -2,18 +2,25 @@ package com.example.babybuy1;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.babybuy1.Adapter.ItemsAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationBarView;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 
@@ -23,11 +30,59 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
     private RecyclerView itemRecyclerView;
     private ItemsAdapter itemsAdapter;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        // Top Navigation View
+        navigationView=findViewById(R.id.navigation);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.home_menu:
+                        Toast.makeText(MainActivity.this, "Clicked Home Page ", Toast.LENGTH_SHORT).show();
+                        Intent homeintent = new Intent(getApplicationContext(), MainActivity.class);
+                        startActivity(homeintent);
+                        break;
+
+                    case R.id.about_menu:
+                        Toast.makeText(MainActivity.this, "Clicked About Page ", Toast.LENGTH_SHORT).show();
+                        Intent aboutintent = new Intent(getApplicationContext(), Login.class);
+                        startActivity(aboutintent);
+                        break;
+
+                    case R.id.contact_menu:
+                        Toast.makeText(MainActivity.this, "Clicked contact  Page ", Toast.LENGTH_SHORT).show();
+                        Intent conintent = new Intent(getApplicationContext(), Login .class);
+                        startActivity(conintent);
+                        break;
+
+                    case R.id.share_menu:
+                        Intent shareintent = new Intent(Intent.ACTION_SEND);
+                        shareintent.setType("text/plain");
+                        shareintent.putExtra(Intent.EXTRA_TEXT, "https://www.facebook.com/ ");
+                        shareintent.putExtra(Intent.EXTRA_SUBJECT, "Your Application link hare ");
+                        startActivity(Intent.createChooser(shareintent, "share Via"));
+                        break;
+                }
+                return false;
+            }
+        });
+        final DrawerLayout drawerLayout = findViewById(R.id.drewer);
+        findViewById(R.id.imagemenu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+
 
         // initialize data
         items = new ArrayList<>();
@@ -125,9 +180,10 @@ public class MainActivity extends AppCompatActivity {
     ) {
         itemsAdapter = new ItemsAdapter(items, (view, position) -> startActivity(ItemDetails.getIntent(
                 getApplicationContext(),
-                items.get(position))
+                items.get(position).getId())
         ));
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         itemRecyclerView.setAdapter(itemsAdapter);
     }
+
 }
